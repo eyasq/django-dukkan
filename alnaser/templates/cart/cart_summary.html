@@ -1,0 +1,103 @@
+
+{% extends 'base.html' %}
+{% block content %}
+
+
+<section class="h-100">
+    <div class="container h-100 py-5">
+      <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col-10">
+  
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-normal mb-0">Shopping Cart</h3>
+          </div>
+  
+          {% for product in products %}
+          <div class="card rounded-3 mb-4">
+            <div class="card-body p-4">
+                <div class="row d-flex justify-content-between align-items-center">
+                    <div class="col-md-2 col-lg-2 col-xl-2">
+                        <img src="{{ product.image.url }}" class="img-fluid rounded-3" alt="Product Image">
+                    </div>
+                    <div class="col-md-3 col-lg-3 col-xl-3">
+                        <p class="lead fw-normal mb-2">{{ product.name }}</p>
+                    </div>
+                    <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
+                        <button class="btn btn-link px-2 decrement-btn">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number" name="quantity" class="form-control form-control-sm quantity-input"
+                            value="1" min="1" data-price="{{ product.price }}">
+                        <button class="btn btn-link px-2 increment-btn">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
+                        <h5 class="mb-0 total-price">₪{{ product.price }}</h5>
+                    </div>
+                    <div class="col-md-1 col-lg-1 col-xl-1 text-end">
+                        <a href="#!" class="text-danger"><i class="fas fa-trash fa-lg"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+  
+         
+        
+          
+              <button  type="button" data-mdb-button-init data-mdb-ripple-init class="m-3 btn btn-success btn-block btn-lg text-white ">Proceed to Checkout</button>
+           
+       
+  
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+    
+    document.querySelectorAll(".decrement-btn").forEach(button => {
+        button.addEventListener("click", function (e) {
+            e.preventDefault();
+            let input = this.nextElementSibling;
+            let currentValue = parseInt(input.value);
+
+            if (currentValue > 1) {
+                input.value = currentValue - 1;
+                updatePrice(input);
+            }
+        });
+    });
+
+    document.querySelectorAll(".increment-btn").forEach(button => {
+        button.addEventListener("click", function (e) {
+            e.preventDefault();
+            let input = this.previousElementSibling;
+            input.value = parseInt(input.value) + 1;
+            updatePrice(input);
+        });
+    });
+
+    document.querySelectorAll(".quantity-input").forEach(input => {
+        input.addEventListener("change", function () {
+            if (this.value < 1) this.value = 1;
+            updatePrice(this);
+        });
+    });
+
+    function updatePrice(input) {
+        let pricePerUnit = parseFloat(input.dataset.price);
+        let quantity = parseInt(input.value);
+        let totalPrice = pricePerUnit * quantity;
+
+        let priceElement = input.closest(".row").querySelector(".total-price");
+        priceElement.textContent = `₪${totalPrice.toFixed(2)}`;
+    }
+});
+</script>
+
+
+  {% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+
+        <!-- Header-->
+        <header class="bg-dark py-5">
+            <div class="container px-4 px-lg-5 my-5">
+                <div class="text-center text-white">
+                    <h1 class="display-4 fw-bolder">Login</h1>
+                    <p class="lead fw-normal text-white-50 mb-0">عبي دارك..  و انت بالدار</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="row">
+                <center>
+                    <div class="col-8">
+                        <form class=" offset-1 mt-3  text-start" action="/login" method="post" >
+                            {% csrf_token %}
+                             <div class="mb-3">
+                              <label for="username" class="form-label">Username</label>
+                              <input type="text" class="form-control" id="username" aria-describedby="emailHelp" name="username"  value="{{data.username|default:''}}" required>
+                            </div>
+                            <div class="mb-3">
+                              <label for="exampleInputPassword1" class="form-label">Password</label>
+                              <input type="password" class="form-control" id="exampleInputPassword1" name="password" value="" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Login</button>
+                            {% if errors %}
+                            <small class="text-danger">Invalid Credentials</small>
+                            {% endif %}
+                          </form>
+                    </div>
+                </center>
+            </div>
+        </div>
+{% endblock %}
