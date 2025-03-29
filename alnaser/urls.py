@@ -26,5 +26,5 @@ urlpatterns = [
     path('register', views.register_user, name='register'),
     path('logout', views.logout_user, name='logout'),
     path('products/<int:product_id>', views.product_show),
-    path('category/<str:foo>', views.category, name='category')
+    path('category/<str:foo>', views.category, name='category'),
 ]

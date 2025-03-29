@@ -20,10 +20,12 @@ from django.urls import path
 
 
 
+
+
 urlpatterns = [
-    path('',views.cart_summary, name='cart_summary' ),
+    path('', views.cart_summary, name='cart_summary'),
     path('add', views.cart_add, name='cart_add'),
-    path('delete', views.cart_delete, name='cart_delete'),
-    path('update', views.cart_update, name='cart_update')
-    
+    path('remove/<int:product_id>/', views.cart_remove, name='cart_remove'),
+    path('update-cart/', views.update_cart, name='update_cart'),
+    path('checkout', views.check_out_page, name='checkout'),
 ]

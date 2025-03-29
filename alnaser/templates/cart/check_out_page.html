@@ -1,0 +1,78 @@
+
+{% extends 'base.html' %}
+{% block content %}
+
+
+<section class="h-100">
+    <div class="container h-100 py-5">
+      <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col-10">
+  
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-normal mb-0">Your Order:</h3>
+          </div>
+  {%if not products %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-normal mb-0">Your Cart is Empty!</h4>
+  </div>
+  {%endif%}
+          {% for product in products %}
+          <div class="card rounded-3 mb-4" data-product-id="{{product.id}}">
+            <div class="card-body p-4">
+                <div class="row d-flex justify-content-between align-items-center">
+                    <div class="col-md-2 col-lg-2 col-xl-2">
+                        <img src="{{ product.image.url }}" class="img-fluid rounded-3" alt="Product Image">
+                    </div>
+                    <div class="col-md-3 col-lg-3 col-xl-3">
+                        <p class="lead fw-normal mb-2">{{ product.name }}</p>
+                    </div>
+                    <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
+                        <button class="btn btn-link px-2 decrement-btn">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number" name="quantity" class="form-control form-control-sm quantity-input"
+                            value="{{product.cart_quantity}}" min="1" data-price="{{ product.price }}" disabled>
+                        <button class="btn btn-link px-2 increment-btn">
+                            <i class="fas fa-plus">Units</i>
+                        </button>
+                    </div>
+                    <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
+                        <h5 class="mb-0 total-price">₪{{ product.cart_total_price|floatformat:2 }}</h5>
+                    </div>
+                    <div class="col-md-1 col-lg-1 col-xl-1 text-end">
+                      <a href="{% url 'cart_remove' product_id=product.id %}" class="text-danger">
+                          <i class="fas fa-trash fa-lg"></i>Remove
+                      </a>
+                  </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+  
+        <div class="card rounded-3 mb-4 d-flex justify-content-between flex-row">
+            <div class="row d-flex justify-content-between flex-row">
+            <h5 class="m-3 fs-2">Your Total Is:</h5> <p class="m-3 fs-2">{{total_cart_value}}₪</p>
+          </div>
+
+        <div class="row">
+          {{current_user.email}}
+        </div>
+        </div>
+
+
+        
+          {% if products %}
+              <button  type="button" data-mdb-button-init data-mdb-ripple-init class="m-3 btn btn-success btn-block btn-lg text-white "><a style="text-decoration: none; color:white" href="/cart/checkout">Confirm Order</a></button>
+           {%endif%}
+       
+  
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  {% endblock %}
+
+
+
