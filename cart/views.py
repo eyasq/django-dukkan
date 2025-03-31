@@ -3,9 +3,11 @@ from django.http import JsonResponse
 import json
 import math
 from .cart import Cart
-from alnaser.models import Product
+from alnaser.models import Order, OrderItem, Product
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 def cart_summary(request):
     cart = Cart(request)
@@ -14,7 +16,7 @@ def cart_summary(request):
         "products": cart_products
     }
     return render(request, 'cart/cart_summary.html', context)
-
+@login_required
 def cart_add(request):
     cart = Cart(request)
     if request.method == 'POST':
@@ -44,6 +46,7 @@ def cart_add(request):
 
 @require_POST
 @csrf_protect
+@login_required
 def update_cart(request):
     cart = Cart(request)
     try:
@@ -75,6 +78,8 @@ def update_cart(request):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
     except Product.DoesNotExist:
         return JsonResponse({"error": "Product not found"}, status=404)
+
+@login_required
 def cart_remove(request, product_id):
 
     cart = Cart(request)
@@ -97,7 +102,7 @@ def cart_remove(request, product_id):
         # Invalid product ID
         return redirect('cart_summary')
     
-
+@login_required
 def check_out_page(request):
     cart = Cart(request)
     # Get products in the cart
@@ -116,3 +121,56 @@ def check_out_page(request):
         'current_user': request.user
     }
     return render(request, 'cart/check_out_page.html', context)
+
+@login_required
+def make_order(request):
+    # to make an order, the order model requires:
+    # customer, who is the currently logged in user, status will be pending upon creation, total price is the the total_cart_value, shipping address is a manual input.
+    # post form gives: extra address, extra contact number, notes
+    # use the rest of data in request to populate the other fields.
+    cart = Cart(request)
+    # Get products in the cart
+    cart_products = cart.get_products()
+    # Calculate total cart value
+    total_cart_value = sum(
+        product.cart_total_price for product in cart_products
+    )
+    # Get total number of items
+    total_items = len(cart)
+    
+    context = {
+        'products': cart_products,
+        'total_cart_value': math.ceil(total_cart_value),
+        'total_items': total_items,
+        'current_user': request.user
+    }
+    # after creating, an order model, i need to create an order item instance for each item
+    #make an order manager and use it to validate the order details.
+    post_data = request.POST
+    errors = Order.objects.order_validator(post_data)
+    if errors:
+        request.session['errors'] = errors
+        messages.error(request, 'Order Failed!')
+        return redirect('/cart/checkout')
+    
+    new_order = Order.objects.create(
+        customer = request.user.customer,
+        status = 'pending',
+        total_price = math.ceil(total_cart_value),
+        shipping_address = post_data.get('address_extra'),
+        info = post_data.get('notes'),
+        contact = post_data.get('contact_extra'),
+    )
+    for product in cart_products:
+        OrderItem.objects.create(
+            order = new_order,
+            product = product,
+            quantity = product.cart_quantity,
+            price = product.price
+        )
+    request.session['cart'] = {}
+
+    messages.success(request, 'Order placed Successfully!')
+    return redirect('/')
+
+    

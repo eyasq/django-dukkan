@@ -49,22 +49,117 @@
         </div>
         {% endfor %}
         
-  
-        <div class="card rounded-3 mb-4 d-flex justify-content-between flex-row">
-            <div class="row d-flex justify-content-between flex-row">
-            <h5 class="m-3 fs-2">Your Total Is:</h5> <p class="m-3 fs-2">{{total_cart_value}}₪</p>
-          </div>
+
 
         <div class="row">
-          {{current_user.email}}
-        </div>
-        </div>
-
+          <div class="col-md-8 mb-4">
+            <div class="card mb-4">
+              <div class="card-header py-3">
+                <h5 class="mb-0">Biling details</h5>
+              </div>
+              <div class="card-body">
+                <form method="post" action="/cart/make_order" >
+                  {% csrf_token %}
 
         
-          {% if products %}
-              <button  type="button" data-mdb-button-init data-mdb-ripple-init class="m-3 btn btn-success btn-block btn-lg text-white "><a style="text-decoration: none; color:white" href="/cart/checkout">Confirm Order</a></button>
-           {%endif%}
+                  <!-- Text input -->
+                  <div data-mdb-input-init class="form-outline mb-4">
+                    <input type="text" id="form7Example4" class="form-control"  name="address_extra">
+                    <label class="form-label" for="form7Example4">Address</label>
+                    {% if request.session.errors.address %}
+                    <small class="text-danger">{{request.session.errors.address}}</small>
+                    {% endif %}
+                  </div>
+        
+
+                  <!-- Number input -->
+                  <div data-mdb-input-init class="form-outline mb-4">
+                    <input type="number" id="form7Example6" class="form-control"  name="contact_extra">
+                    <label class="form-label" for="form7Example6">Phone</label>
+                    {% if request.session.errors.contact %}
+                    <small class="text-danger">{{request.session.errors.contact}}</small>
+                    {% endif %}
+                  </div>
+        
+                  <!-- Message input -->
+                  <div data-mdb-input-init class="form-outline mb-4">
+                    <textarea class="form-control" id="form7Example7" rows="4"  name="notes"></textarea>
+                    <label class="form-label" for="form7Example7">Additional information (Optional)</label>
+                  </div>
+                  <small>For User:  {{current_user.email}}</small>
+              </div>
+            </div>
+          </div>
+        
+          <div class="col-md-4 mb-4">
+            <div class="card mb-4">
+              <div class="card-header py-3">
+                <h5 class="mb-0">Summary</h5>
+              </div>
+              <div class="card-body">
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 pb-0">
+                    Products
+                    <span>{{total_cart_value}}₪</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    Shipping
+                    <span>Gratis</span>
+                  </li>
+                  <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 mb-3">
+                    <div>
+                      <strong>Total amount</strong>
+                      <strong>
+                        <p class="mb-0">(including VAT)</p>
+                      </strong>
+                    </div>
+                    <span><strong>{{total_cart_value}}₪</strong></span>
+                  </li>
+                </ul>
+        
+                {% if products %}
+                <button  type="submit" data-mdb-button-init data-mdb-ripple-init class="m-3 btn btn-success btn-block btn-lg text-white ">Submit Order</button>
+             {%endif%}
+            </form>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+        
+
        
   
         </div>

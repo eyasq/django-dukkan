@@ -6,6 +6,20 @@ import datetime
 def get_default_customer():
     return Customer.objects.get(user__username='eyas')
 
+
+class OrderManager(models.Manager):
+    def order_validator(self, post_data):
+        errors = {}
+        address = post_data.get('address_extra')
+        if not address:
+            errors['address'] = 'Address cannot be empty'
+        if len(address) < 15: 
+            errors['address'] = 'Address too short, please be more detailed.'
+        contact = post_data.get('contact_extra')
+        if not contact or len(contact) < 10:
+            errors['contact'] = 'You must provide a valid contact number (minimum 10 chars)'
+        return errors
+
 class Category(models.Model):
     name = models.CharField(max_length=30)
     description = models.TextField()
@@ -46,10 +60,13 @@ class Order(models.Model):
     )
     customer = models.ForeignKey('Customer', related_name='orders', on_delete=models.CASCADE, blank=True, null=True)
     status = models.CharField(choices=ORDER_STATUS, default='pending', max_length=50)
-    total_price = models.DecimalField(max_digits=5, decimal_places=2)
+    total_price = models.DecimalField(max_digits=7, decimal_places=2)
     shipping_address = models.TextField()
+    info = models.TextField(blank=True, null=True)
+    contact = models.CharField(max_length=32)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    objects = OrderManager()
     def __str__(self):
         return f"Order #{self.id} - {self.customer.user.username}"
 

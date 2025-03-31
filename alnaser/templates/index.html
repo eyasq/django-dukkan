@@ -52,6 +52,7 @@
                                     <form id="cart-form">
                                         {% csrf_token %}
                                         <input type="hidden" value="{{product.id}}" name="product_id">
+                                        <input type="hidden" id="user-authenticated" value="{{ request.user.is_authenticated }}">
                                     <button class="btn btn-outline-dark mt-auto" type="button" id="add_cart">Add to Cart</button>
                                 </form>
                                 </div>
@@ -73,10 +74,18 @@
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
         <script>
-    document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll("#add_cart").forEach(button => {
         button.addEventListener("click", function (e) {
             e.preventDefault();
+
+            // Check if user is authenticated
+            let isAuthenticated = document.getElementById("user-authenticated").value === "True";
+            if (!isAuthenticated) {
+                alert("You must be logged in to add items to the cart.");
+                window.location.href = "{% url 'login' %}";  // Redirect to login page
+                return;
+            }
 
             let form = this.closest("form");  // Get the closest form
             let productId = form.querySelector("input[name='product_id']").value;
@@ -91,19 +100,16 @@
             })
             .then(response => {
                 console.log(response.data);
-                document.getElementById('cart_quantity').textContent = response.data.qty
-
+                document.getElementById('cart_quantity').textContent = response.data.qty;
                 alert("Product added to cart!");
             })
             .catch(error => {
-                if (error.response && error.response.status == 400){
-                    alert("Product already in cart! Change quantities in the cart page.")
-                }
-                else{
+                if (error.response && error.response.status === 400) {
+                    alert("Product already in cart! Change quantities in the cart page.");
+                } else {
                     console.log(error);
-                    alert("Error adding product to cart.")
+                    alert("Error adding product to cart.");
                 }
-
             });
         });
     });

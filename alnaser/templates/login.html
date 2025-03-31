@@ -18,12 +18,12 @@
                         <form class=" offset-1 mt-3  text-start" action="/login" method="post" >
                             {% csrf_token %}
                              <div class="mb-3">
-                              <label for="username" class="form-label">Username</label>
-                              <input type="text" class="form-control" id="username" aria-describedby="emailHelp" name="username"  value="{{data.username|default:''}}" required>
+                              <label for="identifier" class="form-label">Email or Phone Number</label>
+                              <input type="text" class="form-control" id="identifier" name="identifier"   required>
                             </div>
                             <div class="mb-3">
-                              <label for="exampleInputPassword1" class="form-label">Password</label>
-                              <input type="password" class="form-control" id="exampleInputPassword1" name="password" value="" required>
+                              <label for="password " class="form-label">Password</label>
+                              <input type="password" class="form-control" id="password " name="password" value="" required>
                             </div>
                             <button type="submit" class="btn btn-primary">Login</button>
                             {% if errors %}

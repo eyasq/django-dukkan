@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from alnaser.models import Category, Product
+from alnaser.models import Category, Customer, Product
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .forms import SignUpForm
@@ -23,11 +23,10 @@ def about(request):
     return render(request, 'about.html')
 
 def register_user(request):
-    form = SignUpForm()
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save()
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')
             #log in user
@@ -38,20 +37,37 @@ def register_user(request):
         else:
             messages.error(request, "Error registering. Please Try Again")
             return redirect('/register')
+    else:
+        form = SignUpForm()
     
     return render(request, 'register.html', {"form":form})
 
 def login_user(request):
     if request.method == 'POST':
-        username = request.POST['username']
+        identifier = request.POST['identifier']
         password = request.POST['password']
+        if '@' in identifier:
+            try:
+                user = User.objects.get(email = identifier)
+                username = user.username
+            except User.DoesNotExist:
+                messages.error(request, 'User Does Not Exist')
+                return redirect('/login')
+        else:
+            try:
+                customer = Customer.objects.get(phone = identifier)
+                username = customer.user.username
+            except Customer.DoesNotExist:
+                messages.error(request, 'User Does Not Exist')
+                return redirect('/login')
+
         user = authenticate(request, username = username, password = password)
         if user is not None:
             login(request, user)
             messages.success(request, 'Successfully Logged In')
             return redirect('/')
         else:
-            messages.error(request, 'Error Siging in. Please Log in.')
+            messages.error(request, 'Invalid password. Please Try Again.')
             return redirect('/login')
     else:
         return render(request, 'login.html')
@@ -60,7 +76,7 @@ def logout_user(request):
     logout(request)
     messages.success(request, "Successfully Logged Out")
     return redirect('/')
-    pass
+    
 
 def product_show(request, product_id):
     product = Product.objects.get(id = product_id)
