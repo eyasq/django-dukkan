@@ -7,6 +7,22 @@ def get_default_customer():
     return Customer.objects.get(user__username='eyas')
 
 
+class CustomerManager(models.Manager):
+    def customer_validator(self, post_data):
+        errors = {}
+        if not post_data.get('phone'):
+            errors['phone'] = 'Phone number is required'
+        elif len(post_data.get('phone')) < 10:
+            errors['phone'] = 'Phone number must be at least 10 digits'
+        
+        if not post_data.get('address'):
+            errors['address'] = 'Address is required'
+        elif len(post_data.get('address')) < 10:
+            errors['address'] = 'Address is too short'
+            
+        return errors
+
+
 class OrderManager(models.Manager):
     def order_validator(self, post_data):
         errors = {}
@@ -47,6 +63,7 @@ class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='customer', blank=True, null=True)
     phone = models.CharField(max_length=15, unique=True)
     address = models.CharField(max_length=255)
+    objects = CustomerManager()
     def __str__(self):
         return self.user.username
 

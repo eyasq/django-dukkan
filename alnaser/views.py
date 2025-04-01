@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -6,6 +7,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .forms import SignUpForm
 from django import forms
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+
 # Create your views here.
 
 def index(request):
@@ -71,7 +75,7 @@ def login_user(request):
             return redirect('/login')
     else:
         return render(request, 'login.html')
-
+@login_required
 def logout_user(request):
     logout(request)
     messages.success(request, "Successfully Logged Out")
@@ -91,4 +95,35 @@ def category(request, foo):
     except:
         messages.error(request, 'No Such Category')
         return redirect('/')
-    pass
+    
+@login_required(login_url='/login')
+def account(request):
+    user= request.user
+    customer = user.customer
+    context = {
+        "user":user,
+        "customer":customer
+    }
+
+    return render(request, 'account.html', context)
+
+@login_required(login_url='/login')
+@require_POST
+def edit_account(request):
+    username = request.POST.get('username')
+    first_name = request.POST.get('first_name')
+    last_name = request.POST.get('last_name')
+    email = request.POST.get('email')
+    address = request.POST.get('address')
+    phone = request.POST.get('phone')
+    errors = {}
+    if not username:
+        errors['username'] = 'Username is required'
+    elif len(username) < 5:
+        errors['username'] = 'Username must be at least 5 characters'
+    if not email:
+        errors['email'] = 'Email is required'
+    elif User.objects.exclude(pk=request.user.pk).filter(email=email).exists():
+        errors['email'] = 'Email is already in use'
+
+    return render(request, 'account.html', context)

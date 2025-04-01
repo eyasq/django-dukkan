@@ -16,7 +16,7 @@ def cart_summary(request):
         "products": cart_products
     }
     return render(request, 'cart/cart_summary.html', context)
-@login_required
+@login_required(login_url='/login')
 def cart_add(request):
     cart = Cart(request)
     if request.method == 'POST':
@@ -46,7 +46,7 @@ def cart_add(request):
 
 @require_POST
 @csrf_protect
-@login_required
+@login_required(login_url='/login')
 def update_cart(request):
     cart = Cart(request)
     try:
@@ -79,7 +79,7 @@ def update_cart(request):
     except Product.DoesNotExist:
         return JsonResponse({"error": "Product not found"}, status=404)
 
-@login_required
+@login_required(login_url='/login')
 def cart_remove(request, product_id):
 
     cart = Cart(request)
@@ -102,7 +102,7 @@ def cart_remove(request, product_id):
         # Invalid product ID
         return redirect('cart_summary')
     
-@login_required
+@login_required(login_url='/login')
 def check_out_page(request):
     cart = Cart(request)
     # Get products in the cart
@@ -122,7 +122,7 @@ def check_out_page(request):
     }
     return render(request, 'cart/check_out_page.html', context)
 
-@login_required
+@login_required(login_url='/login')
 def make_order(request):
     # to make an order, the order model requires:
     # customer, who is the currently logged in user, status will be pending upon creation, total price is the the total_cart_value, shipping address is a manual input.
