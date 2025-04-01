@@ -28,5 +28,7 @@ urlpatterns = [
     path('products/<int:product_id>', views.product_show),
     path('category/<str:foo>', views.category, name='category'),
     path('account', views.account, name='account'),
-    path('account/edit', views.edit_account, name='edit_account')
+    path('account/edit', views.edit_account, name='edit_account'),
+    path('order/delete/<int:order_id>', views.delete_order, name='delete_order'),
+    path('account/change', views.change_password, name='change_password'),
 ]

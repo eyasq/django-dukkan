@@ -8,17 +8,27 @@ def get_default_customer():
 
 
 class CustomerManager(models.Manager):
-    def customer_validator(self, post_data):
+    def customer_validator(self, post_data, current_user=None):
         errors = {}
-        if not post_data.get('phone'):
-            errors['phone'] = 'Phone number is required'
-        elif len(post_data.get('phone')) < 10:
-            errors['phone'] = 'Phone number must be at least 10 digits'
+        phone = post_data.get('phone')
+        address = post_data.get('address')
         
-        if not post_data.get('address'):
+        # Validate phone - exclude current user's phone if provided
+        if not phone:
+            errors['phone'] = 'Phone number is required'
+        elif len(phone) < 10:
+            errors['phone'] = 'Phone must be at least 10 digits'
+        else:
+            # Create queryset that excludes current user
+            queryset = self.exclude(user=current_user)
+            if queryset.filter(phone=phone).exists():
+                errors['phone'] = 'This phone number is already registered'
+        
+        # Validate address
+        if not address:
             errors['address'] = 'Address is required'
-        elif len(post_data.get('address')) < 10:
-            errors['address'] = 'Address is too short'
+        elif len(address) < 10:
+            errors['address'] = 'Address is too short (min 10 chars)'
             
         return errors
 

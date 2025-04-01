@@ -2,7 +2,10 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from alnaser.models import Category, Customer, Product
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+
+from alnaser.models import Category, Customer, Order, Product
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .forms import SignUpForm
@@ -100,9 +103,12 @@ def category(request, foo):
 def account(request):
     user= request.user
     customer = user.customer
+    orders = customer.orders.all().order_by('-created_at')
+
     context = {
         "user":user,
-        "customer":customer
+        "customer":customer,
+        "orders":orders
     }
 
     return render(request, 'account.html', context)
@@ -110,6 +116,8 @@ def account(request):
 @login_required(login_url='/login')
 @require_POST
 def edit_account(request):
+    user = request.user
+    customer = user.customer
     username = request.POST.get('username')
     first_name = request.POST.get('first_name')
     last_name = request.POST.get('last_name')
@@ -125,5 +133,55 @@ def edit_account(request):
         errors['email'] = 'Email is required'
     elif User.objects.exclude(pk=request.user.pk).filter(email=email).exists():
         errors['email'] = 'Email is already in use'
+    customer_errors = Customer.objects.customer_validator(request.POST, current_user = user)
+    errors.update(customer_errors)
+    if not errors:
+            # Update only changed fields
+        if user.username != username:
+            user.username = username
+        if user.first_name != first_name:
+            user.first_name = first_name
+        if user.last_name != last_name:
+            user.last_name = last_name
+        if user.email != email:
+            user.email = email
+        user.save()
+            
+        if customer.address != address:
+            customer.address = address
+        if customer.phone != phone:
+            customer.phone = phone
+            customer.save()
+            
+        messages.success(request, 'Profile updated successfully!')
+        return redirect('/')
+    else:
+        context = {
+                'errors': errors,
+                'original_values': request.POST
+            }
+        return render(request, 'account.html', context)
+    
+def delete_order(request, order_id):
+    order = Order.objects.get(id = order_id)
+    order.delete()
+    messages.success(request, 'Order cancelled')
+    return redirect('/')
+    
 
-    return render(request, 'account.html', context)
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Keep the user logged in after password change
+            update_session_auth_hash(request, user)  
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('account')  # Redirect to profile page
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        form = PasswordChangeForm(request.user)
+    
+    return render(request, 'change_password.html', {'form': form})
