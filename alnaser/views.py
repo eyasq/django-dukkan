@@ -7,10 +7,9 @@ from django.contrib.auth import update_session_auth_hash
 
 from alnaser.models import Category, Customer, Order, Product
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
-from .forms import SignUpForm
+from .forms import SignUpForm,ProductAddForm
 from django import forms
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST
 
 # Create your views here.
@@ -185,3 +184,21 @@ def change_password(request):
         form = PasswordChangeForm(request.user)
     
     return render(request, 'change_password.html', {'form': form})
+def staff_check(user):
+    return user.is_staff
+
+@login_required
+@user_passes_test(staff_check, login_url='/login/')
+def add_product(request):
+    if request.method == 'POST':
+        form = ProductAddForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save()
+            messages.success(request, f'Product "{product.name}" added successfully!')
+            return redirect('home')  # Redirect to product list page
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ProductAddForm()
+    
+    return render(request, 'products/add_product.html', {'form': form})

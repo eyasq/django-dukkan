@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
 
-from alnaser.models import Customer
+from alnaser.models import Customer, Product, Category
 
 
 class SignUpForm(UserCreationForm):
@@ -56,3 +56,27 @@ class SignUpForm(UserCreationForm):
 		if User.objects.filter(email=email).exists():
 			raise forms.ValidationError("This email address is already in use.")
 		return email
+	
+
+class ProductAddForm(forms.ModelForm):
+    ON_SALE_CHOICES = [
+        (False, 'No'),
+        (True, 'Yes'),
+    ]
+    on_sale = forms.ChoiceField(
+        choices=ON_SALE_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'}))
+    
+    class Meta:
+        model = Product
+        fields = ['name', 'price', 'description', 'image', 'category', 'on_sale', 'sale_price']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add Bootstrap classes to all fields
+        for field in self.fields:
+            self.fields[field].widget.attrs.update({'class': 'form-control'})
+        self.fields['image'].required = False  # Make image optional
