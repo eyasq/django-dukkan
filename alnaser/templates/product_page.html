@@ -20,14 +20,17 @@
                   <div class="col-md-8 d-flex flex-column flex-row-reverse">
                     <div class="card-body">
                       <h5 class="card-title">{{product.name}}</h5>
+                      <p class="card-text">Barcode: {{product.barcode}}</p>
                       <p class="card-text">عن الصنف: {{product.description}}</p>
                       <p class="card-text">التصنيف: <a href="/category/{{product.category.name}}">{{product.category}}</a></p>
 
                       <p class="card-text"><small class="text-body-secondary">اخر تعديل: {{product.updated_at}}</small></p>
                       <p class="card-text">السعر: {{product.price}}</p>
 
-                      <a href="#" class="card-link">Edit Product</a>
+                      {% if request.user.is_authenticated and request.user.is_staff %}
                       <a href="#" class="card-link text-danger">Delete product</a>
+                      <a href="#" class="card-link">Edit Product</a>
+                      {%endif%}
 <br>
 <a href="/" class="card-link "> Back to home</a>
 

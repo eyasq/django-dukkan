@@ -91,8 +91,10 @@
                             <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">Sale</div>
                             {%endif%}
                             <!-- Product image-->
-                            <img class="card-img-top" src="{{product.image.url}}" alt="..." />
-                            <!-- Product details-->
+                            <img class="card-img-top" 
+                            style="height:200px; width:100%; object-fit: contain; background-color:#f8f9fa;" 
+                            src="{{product.image.url}}" 
+                            alt="{{product.name}}" />                                                        <!-- Product details-->
                             <div class="card-body p-4">
                                 <div class="text-center">
                                     <!-- Product name-->
@@ -212,9 +214,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             data.products.forEach(product => {
                 let productCard = `
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="card mb-3">
-                            <img src="${product.image_url}" class="card-img-top" alt="${product.name}">
+                            <img src="${product.image_url}" class="card-img-top" style="height:300px;" alt="${product.name}">
                             <div class="card-body">
                                 <h5 class="card-title">${product.name}</h5>
                                 <p class="card-text">Price: ₪${product.price}</p>

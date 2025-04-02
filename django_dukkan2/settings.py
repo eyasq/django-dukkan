@@ -9,9 +9,13 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 from dotenv import load_dotenv  # pip install python-dotenv
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
 import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,6 +36,19 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.getenv('CLOUDINARY_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_SECRET')
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+cloudinary.config( 
+  cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'), 
+  api_key = os.getenv('CLOUDINARY_KEY'), 
+  api_secret = os.getenv('CLOUDINARY_SECRET'),
+  secure = True
+)
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,6 +60,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'alnaser',
     'cart',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [

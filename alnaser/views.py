@@ -220,14 +220,18 @@ def staff_check(user):
 @user_passes_test(staff_check, login_url='/login/')
 def add_product(request):
     if request.method == 'POST':
-        form = ProductAddForm(request.POST, request.FILES)
+        form = ProductAddForm(request.POST, request.FILES)  # Include request.FILES
+
         if form.is_valid():
-            product = form.save()
-            messages.success(request, f'Product "{product.name}" added successfully!')
-            return redirect('home')  # Redirect to product list page
+            product = form.save() 
+            return redirect('home')  
         else:
+            print(form.errors)  # Debugging: Print form errors to the console
             messages.error(request, 'Please correct the errors below.')
+
+    
     else:
         form = ProductAddForm()
     
     return render(request, 'products/add_product.html', {'form': form})
+
