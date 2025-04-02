@@ -15,7 +15,13 @@ from django.views.decorators.http import require_POST
 # Create your views here.
 
 def index(request):
+    categories = Category.objects.all()
     products = Product.objects.all()
+
+    category_id = request.GET.get('category', None)
+    if category_id and category_id != 'all':
+        products = products.filter(category__id=category_id)
+    
     categories = Category.objects.all()
     context = {
         "products":products,
@@ -23,6 +29,7 @@ def index(request):
     }
     request.session.categories = categories
     return render(request, 'index.html', context)
+
 
 def about(request):
 

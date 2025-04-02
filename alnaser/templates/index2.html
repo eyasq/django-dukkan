@@ -1,26 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<style>
-    /* Make sidebar sticky on larger screens */
-@media (min-width: 992px) {
-    #sidebarCollapse {
-        display: block !important;
-    }
-    .sidebar-sticky {
-        position: sticky;
-        top: 20px;
-    }
-}
 
-/* Category list item hover effect */
-.list-group-item a {
-    transition: all 0.3s;
-}
-.list-group-item a:hover {
-    color: #0d6efd !important;
-    padding-left: 5px;
-}
-</style>
 <!-- Header remains the same -->
 <header class="bg-dark py-5">
     <div class="container px-4 px-lg-5 my-5">
@@ -33,34 +13,6 @@
 
 <!-- Main Content Section -->
 <section class="py-5">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="d-flex justify-content-center align-items-center gap-3">
-                    
-                    <!-- Dropdown for Search Type -->
-                    <div class="dropdown">
-                        <button id="searchTypeButton" class="btn btn-light px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Search by Name
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item search-option" href="#" data-type="name">Search by Name</a></li>
-                            <li><a class="dropdown-item search-option" href="#" data-type="barcode">Search by Barcode</a></li>
-                        </ul>
-                    </div>
-
-                    <!-- Search Form -->
-                    <form id="searchForm" class="flex-grow-1 d-flex" role="search" method="GET" action="#nowhere">
-                        <input type="hidden" id="searchType" name="search_type" value="name"> 
-                        <input class="form-control me-2 py-2" type="search" name="query" placeholder="Search..." aria-label="Search">
-                        <button class="btn btn-outline-success" type="submit">Search</button>
-                    </form>
-
-                </div>
-            </div>
-        </div>
-    </div>
-    </div>
     <div class="container px-4 px-lg-5 mt-5">
         <div class="row">
             <!-- Sidebar Column - Takes 3 columns on lg screens, collapses on smaller -->
@@ -185,47 +137,12 @@ button.addEventListener("click", function (e) {
             console.log(error);
             alert("Error adding product to cart.");
         }
-           });
-        });
     });
 });
-
-// for search functionality
-document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll(".search-option").forEach(option => {
-        option.addEventListener("click", function (e) {
-            e.preventDefault();
-            
-            let selectedType = this.getAttribute("data-type");
-            let button = document.getElementById("searchTypeButton");
-            let hiddenInput = document.getElementById("searchType");
-
-            if (selectedType === "name") {
-                button.textContent = "Search by Name";
-                hiddenInput.value = "name";
-            } else {
-                button.textContent = "Search by Barcode";
-                hiddenInput.value = "barcode";
-            }
-        });
-    });
+});
 });
 
-/*  postdata = request.POST
-if not postdata.get('search_term'):
- do nothing
-if postdata['searchType'] == 'name':
-    query = postdata.get('search_term')
-    let results = Product.objects.filter(name__icontains = query)
-    and render results
-elif postdata['searchType'] == 'barcode':
-    query = postdata.get('search_term')
-    let results = Product.objects.filter(barcode = query)
-    and render results
-
-
-*/
+</script>isting script ...
 </script>
-
 
 {% endblock %}

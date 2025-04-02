@@ -9,13 +9,7 @@
                     <h4>Add New Product</h4>
                 </div>
                 <div class="card-body">
-                    {% if messages %}
-                        {% for message in messages %}
-                        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}">
-                            {{ message }}
-                        </div>
-                        {% endfor %}
-                    {% endif %}
+                    
                     
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
