@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -29,7 +29,29 @@ def index(request):
     }
     request.session.categories = categories
     return render(request, 'index.html', context)
+def search_products(request):
+    if request.method == "POST":
+        search_term = request.POST.get("search_term", "").strip()
+        search_type = request.POST.get("search_type", "name")  # Default to searching by name
 
+        if not search_term:
+            return JsonResponse({"products": []})  # Return an empty list if no query
+
+        if search_type == "name":
+            results = Product.objects.filter(name__icontains=search_term)
+        elif search_type == "barcode":
+            results = Product.objects.filter(barcode=search_term)
+        else:
+            results = Product.objects.none()
+
+        products_data = [
+            {"id": p.id, "name": p.name, "barcode": p.barcode, "price": p.price, "image_url": p.image.url}
+            for p in results
+        ]
+
+        return JsonResponse({"products": products_data})
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
 
 def about(request):
 

@@ -35,31 +35,18 @@
 <section class="py-5">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="d-flex justify-content-center align-items-center gap-3">
-                    
-                    <!-- Dropdown for Search Type -->
-                    <div class="dropdown">
-                        <button id="searchTypeButton" class="btn btn-light px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Search by Name
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item search-option" href="#" data-type="name">Search by Name</a></li>
-                            <li><a class="dropdown-item search-option" href="#" data-type="barcode">Search by Barcode</a></li>
-                        </ul>
-                    </div>
-
-                    <!-- Search Form -->
-                    <form id="searchForm" class="flex-grow-1 d-flex" role="search" method="GET" action="#nowhere">
-                        <input type="hidden" id="searchType" name="search_type" value="name"> 
-                        <input class="form-control me-2 py-2" type="search" name="query" placeholder="Search..." aria-label="Search">
-                        <button class="btn btn-outline-success" type="submit">Search</button>
-                    </form>
-
+            <div class="col-md-8">
+                <div class="input-group mb-3">
+                    <select id="searchType" class="form-select">
+                        <option value="name" selected>Search by Name</option>
+                        <option value="barcode">Search by Barcode</option>
+                    </select>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Enter search term">
+                    <button class="btn btn-outline-success" id="searchButton">Search</button>
                 </div>
             </div>
         </div>
-    </div>
+        <div id="searchResults" class="row"></div>
     </div>
     <div class="container px-4 px-lg-5 mt-5">
         <div class="row">
@@ -192,22 +179,53 @@ button.addEventListener("click", function (e) {
 
 // for search functionality
 document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll(".search-option").forEach(option => {
-        option.addEventListener("click", function (e) {
-            e.preventDefault();
-            
-            let selectedType = this.getAttribute("data-type");
-            let button = document.getElementById("searchTypeButton");
-            let hiddenInput = document.getElementById("searchType");
+    const searchInput = document.getElementById("searchInput");
+    const searchType = document.getElementById("searchType");
+    const searchResults = document.getElementById("searchResults");
 
-            if (selectedType === "name") {
-                button.textContent = "Search by Name";
-                hiddenInput.value = "name";
-            } else {
-                button.textContent = "Search by Barcode";
-                hiddenInput.value = "barcode";
+    searchInput.addEventListener("input", function () {
+        let query = searchInput.value.trim();
+        let type = searchType.value;
+
+        if (query.length === 0) {
+            searchResults.innerHTML = "";  // Clear results when input is empty
+            return;
+        }
+
+        fetch("{% url 'search_products' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: new URLSearchParams({
+                search_term: query,
+                search_type: type
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            searchResults.innerHTML = "";  // Clear previous results
+            if (data.products.length === 0) {
+                searchResults.innerHTML = "<p class='text-center'>No results found</p>";
+                return;
             }
-        });
+            data.products.forEach(product => {
+                let productCard = `
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <img src="${product.image_url}" class="card-img-top" alt="${product.name}">
+                            <div class="card-body">
+                                <h5 class="card-title">${product.name}</h5>
+                                <p class="card-text">Price: ₪${product.price}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                searchResults.innerHTML += productCard;
+            });
+        })
+        .catch(error => console.error("Error:", error));
     });
 });
 

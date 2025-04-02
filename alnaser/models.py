@@ -65,6 +65,7 @@ class Product(models.Model):
     category = models.ForeignKey('Category',related_name='products', on_delete=models.CASCADE )
     on_sale = models.BooleanField(default = False)
     sale_price = models.DecimalField(max_digits=5, decimal_places=2)
+    barcode = models.CharField(max_length=13)
     def __str__(self):
         return self.name    
 
