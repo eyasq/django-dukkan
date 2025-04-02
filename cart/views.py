@@ -8,6 +8,10 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
 
 def cart_summary(request):
     cart = Cart(request)
@@ -122,20 +126,13 @@ def check_out_page(request):
     }
     return render(request, 'cart/check_out_page.html', context)
 
+
+
 @login_required(login_url='/login')
 def make_order(request):
-    # to make an order, the order model requires:
-    # customer, who is the currently logged in user, status will be pending upon creation, total price is the the total_cart_value, shipping address is a manual input.
-    # post form gives: extra address, extra contact number, notes
-    # use the rest of data in request to populate the other fields.
     cart = Cart(request)
-    # Get products in the cart
     cart_products = cart.get_products()
-    # Calculate total cart value
-    total_cart_value = sum(
-        product.cart_total_price for product in cart_products
-    )
-    # Get total number of items
+    total_cart_value = sum(product.cart_total_price for product in cart_products)
     total_items = len(cart)
     
     context = {
@@ -144,8 +141,7 @@ def make_order(request):
         'total_items': total_items,
         'current_user': request.user
     }
-    # after creating, an order model, i need to create an order item instance for each item
-    #make an order manager and use it to validate the order details.
+    
     post_data = request.POST
     errors = Order.objects.order_validator(post_data)
     if errors:
@@ -154,23 +150,109 @@ def make_order(request):
         return redirect('/cart/checkout')
     
     new_order = Order.objects.create(
-        customer = request.user.customer,
-        status = 'pending',
-        total_price = math.ceil(total_cart_value),
-        shipping_address = post_data.get('address_extra'),
-        info = post_data.get('notes'),
-        contact = post_data.get('contact_extra'),
+        customer=request.user.customer,
+        status='pending',
+        total_price=math.ceil(total_cart_value),
+        shipping_address=post_data.get('address_extra'),
+        info=post_data.get('notes'),
+        contact=post_data.get('contact_extra'),
     )
+    
     for product in cart_products:
         OrderItem.objects.create(
-            order = new_order,
-            product = product,
-            quantity = product.cart_quantity,
-            price = product.price
+            order=new_order,
+            product=product,
+            quantity=product.cart_quantity,
+            price=product.price
         )
+    
     request.session['cart'] = {}
-
+    
+    # Send confirmation email
+    try:
+        # Get order items for the email
+        order_items = OrderItem.objects.filter(order=new_order)
+        
+        # Prepare email context
+        email_context = {
+            'user': request.user,
+            'order': new_order,
+            'order_items': order_items,
+            'site_name': 'Your Store Name',
+            'contact_email': 'support@yourstore.com'
+        }
+        
+        # Render HTML content
+        html_content = render_to_string('email/order_confirmation.html', email_context)
+        text_content = strip_tags(html_content) 
+        
+        # Create email
+        msg = EmailMultiAlternatives(
+            subject=f"Order Confirmation #{new_order.id}",
+            body=text_content,
+            from_email='qeremeyas99@gmail.com',
+            to=[request.user.email],
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+        
+    except Exception as e:
+        # Log the error but don't interrupt the order flow
+        print(f"Failed to send confirmation email: {e}")
+    
     messages.success(request, 'Order placed Successfully!')
     return redirect('/')
+
+
+# @login_required(login_url='/login')
+# def make_order(request):
+#     # to make an order, the order model requires:
+#     # customer, who is the currently logged in user, status will be pending upon creation, total price is the the total_cart_value, shipping address is a manual input.
+#     # post form gives: extra address, extra contact number, notes
+#     # use the rest of data in request to populate the other fields.
+#     cart = Cart(request)
+#     # Get products in the cart
+#     cart_products = cart.get_products()
+#     # Calculate total cart value
+#     total_cart_value = sum(
+#         product.cart_total_price for product in cart_products
+#     )
+#     # Get total number of items
+#     total_items = len(cart)
+    
+#     context = {
+#         'products': cart_products,
+#         'total_cart_value': math.ceil(total_cart_value),
+#         'total_items': total_items,
+#         'current_user': request.user
+#     }
+#     # after creating, an order model, i need to create an order item instance for each item
+#     #make an order manager and use it to validate the order details.
+#     post_data = request.POST
+#     errors = Order.objects.order_validator(post_data)
+#     if errors:
+#         request.session['errors'] = errors
+#         messages.error(request, 'Order Failed!')
+#         return redirect('/cart/checkout')
+    
+#     new_order = Order.objects.create(
+#         customer = request.user.customer,
+#         status = 'pending',
+#         total_price = math.ceil(total_cart_value),
+#         shipping_address = post_data.get('address_extra'),
+#         info = post_data.get('notes'),
+#         contact = post_data.get('contact_extra'),
+#     )
+#     for product in cart_products:
+#         OrderItem.objects.create(
+#             order = new_order,
+#             product = product,
+#             quantity = product.cart_quantity,
+#             price = product.price
+#         )
+#     request.session['cart'] = {}
+
+#     messages.success(request, 'Order placed Successfully!')
+#     return redirect('/')
 
     
